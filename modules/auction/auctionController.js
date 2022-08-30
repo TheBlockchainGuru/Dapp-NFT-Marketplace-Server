@@ -4,6 +4,7 @@ const auctionSchema = require('./auctionSchema');
 const bidSchema = require('../bid/bidSchema');
 const transactionSchema = require('../transaction/transactionSchema');
 const nftSchema = require('../nft/nftSchema');
+const historySchema = require('../history/historySchema');
 
 const auctionController = {};
 
@@ -20,6 +21,16 @@ auctionController.Auction = async (req, res, next) => {
             supply: req.body.supply
         });
         await data.save();
+        await new historySchema({
+            market: req.body.market,
+            nft: req.body.nft,
+            type: 'List',
+            list: data._id,
+            supply: req.body.supply,
+            creator: req.body.seller,
+            state: "0",
+            endAt: req.body.endAt
+        }).save();
         return otherHelper.sendResponse(res, httpStatus.OK, { auction: data });
     } catch (err) {
         next(err);
