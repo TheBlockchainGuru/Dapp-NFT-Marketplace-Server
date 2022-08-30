@@ -3,6 +3,7 @@ const otherHelper = require('../../helper/others.helper');
 const buySchema = require('./buySchema');
 const ownerSchema = require('../owner/ownerSchema');
 const transactionSchema = require('../transaction/transactionSchema');
+const nftSchema = require('../nft/nftSchema');
 
 const buyController = {};
 
@@ -54,21 +55,55 @@ buyController.Sell = async (req, res, next) => {
 
 buyController.Get = async (req, res, next) => {
     try {
-        let query = {}
-        if (req.body.sort) {
-            query.sort = req.body.sort;
-        } else if (req.body.keyword) {
-            buySchema.index({'$**': 'text'});
-            query.$text = {
-                $search: req.body.keyword
+        let nftIds = [];
+        let nftIdsFromSearch = [];
+        let nftIdsFromCategory = [];
+        let query = { state: '0' }
+
+        if (req.body.keyword) {
+            const nfts = await nftSchema
+                            .find({
+                                $text: {
+                                    $search: req.body.keyword
+                                }
+                            })
+                            .select('id');
+            if (nfts.length) {
+                nftIdsFromSearch = nfts.map(element => element.id);
+                nftIds.push(...nftIdsFromSearch);
             }
-        } else if (req.body.category) {
-            query.category = req.body.category;
+            
+            query.nft = {
+                $in: nftIds
+            }
+        } 
+        
+        if (req.body.category) {
+            const nfts = await nftSchema
+                                .find({category: req.body.category})
+                                .select('id')
+            if (nfts.length) {
+                nftIdsFromCategory = nfts.map(element => element.id)
+            }
+
+            if (req.body.keyword) {
+                if (nftIds.length) {
+                    const realItems = nftIds.filter(element => nftIdsFromCategory.includes(element))
+                    console.log(realItems)
+                    nftIds = realItems; 
+                }
+            } else {
+                nftIds.push(...nftIdsFromCategory);
+            }
+
+            query.nft = {
+                $in: nftIds
+            }
         }
-        console.log(query)
+
         const data = await buySchema
-                        // .find(query)
-                        .find({ state: "0" })
+                        .find(query)
+                        .sort([req.body.sort])
                         .populate({
                             path: 'sellerInfo', 
                             populate: {
@@ -76,14 +111,7 @@ buyController.Get = async (req, res, next) => {
                             }
                         })
                         .populate('nftInfo')
-                        // .populate({
-                        //     path: 'nftInfo',
-                        //     populate: {
-                        //         path: 'creator'
-                        //     }
-                        // })
                         .limit(req.body.limit ?? 12)
-                        console.log(data)
         return otherHelper.sendResponse(res, httpStatus.OK, { buys: data });
         
     } catch (err) {

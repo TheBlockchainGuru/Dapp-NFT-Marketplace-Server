@@ -61,4 +61,6 @@ nftSchema.virtual('owners', {
     foreignField: 'nft',
 })
 
+nftSchema.index({'$**': 'text'});
+
 module.exports = Nft = mongoose.model('nfts', nftSchema);
