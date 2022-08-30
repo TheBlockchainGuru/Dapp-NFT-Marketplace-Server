@@ -67,7 +67,7 @@ auctionController.Get = async (req, res, next) => {
         let nftIds = [];
         let nftIdsFromSearch = [];
         let nftIdsFromCategory = [];
-        let query = { state: '0' }
+        let query = { state: { $in: [0, 1] } }
         let sort = ['createAt', '1'];
 
         if (req.body.sort) {
@@ -103,7 +103,6 @@ auctionController.Get = async (req, res, next) => {
             if (req.body.keyword) {
                 if (nftIds.length) {
                     const realItems = nftIds.filter(element => nftIdsFromCategory.includes(element))
-                    console.log(realItems)
                     nftIds = realItems; 
                 }
             } else {
@@ -125,6 +124,15 @@ auctionController.Get = async (req, res, next) => {
                         })
                         .populate('nftInfo')
                         .limit(req.body.limit ?? 12)
+
+        if (auctions.length) {
+            for( let i = 0; i < auctions.length; i ++) {
+                const auction = auctions[i];
+                const bids = await bidSchema.find({auction: auction._id})
+                auctions[i].bids = bids;
+            }
+        }
+        
         return otherHelper.sendResponse(res, httpStatus.OK, { auctions: auctions });
     } catch (err) {
         next(err);
@@ -157,8 +165,19 @@ auctionController.Find = async (req, res, next) => {
                                 }
                             }]
                         })
-        // console.
-        return otherHelper.sendResponse(res, httpStatus.OK, { auction: data });
+        const bids = await bidSchema
+                                .find({auction: data._id})
+                                .populate({
+                                    path: 'bidderInfo',
+                                    populate: {
+                                        path: 'user'
+                                    }
+                                })
+                                .sort([['price', '1']]);
+        const result = data.toObject();
+        result.bids = bids;
+
+        return otherHelper.sendResponse(res, httpStatus.OK, { auction: result });
     } catch (err) {
         next(err);
     }

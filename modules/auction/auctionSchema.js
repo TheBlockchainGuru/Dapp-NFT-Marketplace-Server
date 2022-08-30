@@ -34,11 +34,7 @@ const auctionSchema = new schema({
         type: String, 
         required: true,
         default: "0"
-    },
-    bids: [{
-        type: mongoose.Types.ObjectId,
-        ref: 'bids'
-    }]
+    }
 }, {
     timestamps: true,
     toJSON: { 
