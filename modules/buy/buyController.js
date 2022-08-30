@@ -59,6 +59,11 @@ buyController.Get = async (req, res, next) => {
         let nftIdsFromSearch = [];
         let nftIdsFromCategory = [];
         let query = { state: '0' }
+        let sort = ['createAt', '1'];
+
+        if (req.body.sort) {
+            sort = req.body.sort;
+        }
 
         if (req.body.keyword) {
             const nfts = await nftSchema
@@ -103,7 +108,7 @@ buyController.Get = async (req, res, next) => {
 
         const data = await buySchema
                         .find(query)
-                        .sort([req.body.sort])
+                        .sort([sort])
                         .populate({
                             path: 'sellerInfo', 
                             populate: {
