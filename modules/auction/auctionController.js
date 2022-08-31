@@ -177,27 +177,29 @@ auctionController.Find = async (req, res, next) => {
                                 }
                             }]
                         })
-        const bids = await bidSchema
-                                .find({auction: data._id})
-                                .populate({
-                                    path: 'bidderInfo',
-                                    populate: {
-                                        path: 'user'
-                                    }
-                                })
-                                .sort([['price', '1']]);
         const result = data.toObject();
-        result.bids = bids;
+        if (data) {
+            const bids = await bidSchema
+                                    .find({auction: data._id})
+                                    .populate({
+                                        path: 'bidderInfo',
+                                        populate: {
+                                            path: 'user'
+                                        }
+                                    })
+                                    .sort([['price', '1']]);
+            result.bids = bids;
 
-        const histories = await historySchema
-                                .find({nft: data.nft})
-                                .populate({
-                                    path: 'creatorInfo',
-                                    populate: {
-                                        path: 'user'
-                                    }
-                                });
-        result.histories = histories;
+            const histories = await historySchema
+                                    .find({nft: data.nft})
+                                    .populate({
+                                        path: 'creatorInfo',
+                                        populate: {
+                                            path: 'user'
+                                        }
+                                    });
+            result.histories = histories;
+        }
 
         return otherHelper.sendResponse(res, httpStatus.OK, { auction: result });
     } catch (err) {
