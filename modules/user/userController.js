@@ -66,4 +66,12 @@ userController.GetFeaturedUsers = async (req, res, next) => {
         next(err);
     }
 }
+
+userController.Search = async (res, req, next) => {
+    try {
+        return otherHelper.sendResponse(res, httpStatus.OK, { message: "SUCCESS"});
+    } catch (err) {
+        next(err);
+    }
+}
 module.exports = userController;

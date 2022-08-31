@@ -42,4 +42,6 @@ userSchema.virtual('wallets', {
     foreignField: 'user'
 })
 
+userSchema.index({'$**': 'text'});
+
 module.exports = User = mongoose.model('users', userSchema);

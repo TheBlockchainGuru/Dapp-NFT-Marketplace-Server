@@ -16,6 +16,15 @@ router.post('/register', userModule.Register);
  * @description Update user route
  * @access Public
  */
+
+ router.post('/search', userModule.Search);
+
+ /**
+  * @route POST api/user/update
+  * @description Update user route
+  * @access Public
+  */
+
 router.post('/update', userModule.Update);
 
 /**
