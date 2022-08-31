@@ -136,16 +136,22 @@ auctionController.Get = async (req, res, next) => {
                         })
                         .populate('nftInfo')
                         .limit(req.body.limit ?? 12)
-
-        if (auctions.length) {
-            for( let i = 0; i < auctions.length; i ++) {
-                const auction = auctions[i];
-                const bids = await bidSchema.find({auction: auction._id})
-                auctions[i].bids = bids;
-            }
+        const result = [];
+        for( let i = 0; i < auctions.length; i ++) {
+            const row = auctions[i].toObject();
+            const bids = await bidSchema
+                            .find({auction: row._id})
+                            .sort([['price', '-1']])
+                            .populate({
+                                path: 'bidderInfo',
+                                populate: {
+                                    path: 'user'
+                                }
+                            })
+            row.bids = bids;
+            result.push(row)
         }
-        
-        return otherHelper.sendResponse(res, httpStatus.OK, { auctions: auctions });
+        return otherHelper.sendResponse(res, httpStatus.OK, { auctions: result });
     } catch (err) {
         next(err);
     }
@@ -189,13 +195,13 @@ auctionController.Find = async (req, res, next) => {
             const result = data.toObject();
             const bids = await bidSchema
                                     .find({auction: data._id})
+                                    .sort([['price', '-1']])
                                     .populate({
                                         path: 'bidderInfo',
                                         populate: {
                                             path: 'user'
                                         }
                                     })
-                                    .sort([['price', '1']]);
             result.bids = bids;
 
             const histories = await historySchema
