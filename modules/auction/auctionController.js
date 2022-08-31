@@ -177,8 +177,8 @@ auctionController.Find = async (req, res, next) => {
                                 }
                             }]
                         })
-        const result = data.toObject();
         if (data) {
+            const result = data.toObject();
             const bids = await bidSchema
                                     .find({auction: data._id})
                                     .populate({
@@ -199,9 +199,11 @@ auctionController.Find = async (req, res, next) => {
                                         }
                                     });
             result.histories = histories;
+            return otherHelper.sendResponse(res, httpStatus.OK, { auction: result });
+        } else {
+            return otherHelper.sendResponse(res, httpStatus.OK, { auction: data });
         }
 
-        return otherHelper.sendResponse(res, httpStatus.OK, { auction: result });
     } catch (err) {
         next(err);
     }

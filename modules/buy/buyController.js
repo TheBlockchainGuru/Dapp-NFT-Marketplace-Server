@@ -163,8 +163,8 @@ buyController.Find = async (req, res, next) => {
                                 }
                             ]
                         })
-        const result = data.toObject();
         if (data) {
+            const result = data.toObject();
             const histories = await historySchema
                                     .find({nft: data.nft})
                                     .populate({
@@ -174,9 +174,11 @@ buyController.Find = async (req, res, next) => {
                                         }
                                     });
             result.histories = histories;
+            return otherHelper.sendResponse(res, httpStatus.OK, { buy: result });
+        } else {
+            return otherHelper.sendResponse(res, httpStatus.OK, { buy: data });
         }
-        
-        return otherHelper.sendResponse(res, httpStatus.OK, { buy: result });
+
     } catch (err) {
         next(err);
     }
