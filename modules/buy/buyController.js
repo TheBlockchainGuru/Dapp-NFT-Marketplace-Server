@@ -26,6 +26,7 @@ buyController.Buy = async (req, res, next) => {
             type: 'Purchase',
             list: data._id,
             supply: req.body.supply,
+            price: req.body.price,
             creator: req.body.seller,
             state: "0",
             endAt: req.body.endAt
@@ -162,7 +163,19 @@ buyController.Find = async (req, res, next) => {
                                 }
                             ]
                         })
-        return otherHelper.sendResponse(res, httpStatus.OK, { buy: data });
+        const histories = await historySchema
+                                .find({nft: data.nft})
+                                .populate({
+                                    path: 'creatorInfo',
+                                    populate: {
+                                        path: 'user'
+                                    }
+                                });
+                        
+        const result = data.toObject();
+        result.histories = histories;
+
+        return otherHelper.sendResponse(res, httpStatus.OK, { buy: result });
     } catch (err) {
         next(err);
     }

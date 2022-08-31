@@ -23,6 +23,9 @@ const historySchema = new schema({
         required: true,
         default: 1
     },
+    price: {
+        type: String,
+    },
     creator: {
         type: String,
         required: true,

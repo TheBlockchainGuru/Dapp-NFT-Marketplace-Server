@@ -27,6 +27,7 @@ auctionController.Auction = async (req, res, next) => {
             type: 'List',
             list: data._id,
             supply: req.body.supply,
+            price: req.body.price,
             creator: req.body.seller,
             state: "0",
             endAt: req.body.endAt
@@ -187,6 +188,16 @@ auctionController.Find = async (req, res, next) => {
                                 .sort([['price', '1']]);
         const result = data.toObject();
         result.bids = bids;
+
+        const histories = await historySchema
+                                .find({nft: data.nft})
+                                .populate({
+                                    path: 'creatorInfo',
+                                    populate: {
+                                        path: 'user'
+                                    }
+                                });
+        result.histories = histories;
 
         return otherHelper.sendResponse(res, httpStatus.OK, { auction: result });
     } catch (err) {
