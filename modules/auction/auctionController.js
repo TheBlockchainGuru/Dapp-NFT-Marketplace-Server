@@ -4,6 +4,7 @@ const auctionSchema = require('./auctionSchema');
 const bidSchema = require('../bid/bidSchema');
 const transactionSchema = require('../transaction/transactionSchema');
 const nftSchema = require('../nft/nftSchema');
+const historySchema = require('../history/historySchema');
 
 const auctionController = {};
 
@@ -20,6 +21,17 @@ auctionController.Auction = async (req, res, next) => {
             supply: req.body.supply
         });
         await data.save();
+        await new historySchema({
+            market: req.body.market,
+            nft: req.body.nft,
+            type: 'List',
+            list: data._id,
+            supply: req.body.supply,
+            price: req.body.price,
+            creator: req.body.seller,
+            state: "0",
+            endAt: req.body.endAt
+        }).save();
         return otherHelper.sendResponse(res, httpStatus.OK, { auction: data });
     } catch (err) {
         next(err);
@@ -67,7 +79,7 @@ auctionController.Get = async (req, res, next) => {
         let nftIds = [];
         let nftIdsFromSearch = [];
         let nftIdsFromCategory = [];
-        let query = { state: '0' }
+        let query = { state: { $in: [0, 1] } }
         let sort = ['createAt', '1'];
 
         if (req.body.sort) {
@@ -103,7 +115,6 @@ auctionController.Get = async (req, res, next) => {
             if (req.body.keyword) {
                 if (nftIds.length) {
                     const realItems = nftIds.filter(element => nftIdsFromCategory.includes(element))
-                    console.log(realItems)
                     nftIds = realItems; 
                 }
             } else {
@@ -125,9 +136,26 @@ auctionController.Get = async (req, res, next) => {
                         })
                         .populate('nftInfo')
                         .limit(req.body.limit ?? 12)
+
+        if (auctions.length) {
+            for( let i = 0; i < auctions.length; i ++) {
+                const auction = auctions[i];
+                const bids = await bidSchema.find({auction: auction._id})
+                auctions[i].bids = bids;
+            }
+        }
+        
         return otherHelper.sendResponse(res, httpStatus.OK, { auctions: auctions });
     } catch (err) {
         next(err);
+    }
+}
+
+auctionController.Popular = async (req, res, next) => {
+    try {
+        return otherHelper.sendResponse(res, httpStatus.OK, { auctions: data });
+    } catch (err) {
+        next(err)
     }
 }
 
@@ -157,8 +185,33 @@ auctionController.Find = async (req, res, next) => {
                                 }
                             }]
                         })
-        // console.
-        return otherHelper.sendResponse(res, httpStatus.OK, { auction: data });
+        if (data) {
+            const result = data.toObject();
+            const bids = await bidSchema
+                                    .find({auction: data._id})
+                                    .populate({
+                                        path: 'bidderInfo',
+                                        populate: {
+                                            path: 'user'
+                                        }
+                                    })
+                                    .sort([['price', '1']]);
+            result.bids = bids;
+
+            const histories = await historySchema
+                                    .find({nft: data.nft})
+                                    .populate({
+                                        path: 'creatorInfo',
+                                        populate: {
+                                            path: 'user'
+                                        }
+                                    });
+            result.histories = histories;
+            return otherHelper.sendResponse(res, httpStatus.OK, { auction: result });
+        } else {
+            return otherHelper.sendResponse(res, httpStatus.OK, { auction: data });
+        }
+
     } catch (err) {
         next(err);
     }

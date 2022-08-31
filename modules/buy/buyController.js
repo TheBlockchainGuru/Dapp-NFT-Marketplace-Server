@@ -4,6 +4,7 @@ const buySchema = require('./buySchema');
 const ownerSchema = require('../owner/ownerSchema');
 const transactionSchema = require('../transaction/transactionSchema');
 const nftSchema = require('../nft/nftSchema');
+const historySchema = require('../history/historySchema');
 
 const buyController = {};
 
@@ -19,6 +20,17 @@ buyController.Buy = async (req, res, next) => {
             supply: req.body.supply
         });
         await data.save();
+        await new historySchema({
+            market: req.body.market,
+            nft: req.body.nft,
+            type: 'Purchase',
+            list: data._id,
+            supply: req.body.supply,
+            price: req.body.price,
+            creator: req.body.seller,
+            state: "0",
+            endAt: req.body.endAt
+        }).save();
         return otherHelper.sendResponse(res, httpStatus.OK, { buy: data });
     } catch (err) {
         next(err);
@@ -46,6 +58,11 @@ buyController.Sell = async (req, res, next) => {
             supply: supply,
             transactionHash: hash
         }).save();
+
+        await historySchema.updateOne({ market:market }, {
+                            endAt: new Date(),
+                            state: 2
+                        });
 
         return otherHelper.sendResponse(res, httpStatus.OK, { message: "OK" });
     } catch (err) {
@@ -151,7 +168,22 @@ buyController.Find = async (req, res, next) => {
                                 }
                             ]
                         })
-        return otherHelper.sendResponse(res, httpStatus.OK, { buy: data });
+        if (data) {
+            const result = data.toObject();
+            const histories = await historySchema
+                                    .find({nft: data.nft})
+                                    .populate({
+                                        path: 'creatorInfo',
+                                        populate: {
+                                            path: 'user'
+                                        }
+                                    });
+            result.histories = histories;
+            return otherHelper.sendResponse(res, httpStatus.OK, { buy: result });
+        } else {
+            return otherHelper.sendResponse(res, httpStatus.OK, { buy: data });
+        }
+
     } catch (err) {
         next(err);
     }

@@ -24,6 +24,13 @@ router.post('/auction', auctionModule.Auction);
 router.post('/get', auctionModule.Get);
 
 /**
+ * @route POST api/auction/popular
+ * @description Get popular assets
+ * @access Public
+ */
+router.post('/popular', auctionModule.Popular);
+
+/**
  * @route POST api/auction/find
  * @description Get auction
  * @access Public

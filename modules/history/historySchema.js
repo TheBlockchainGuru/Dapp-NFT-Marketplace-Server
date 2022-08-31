@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
-const auctionSchema = new schema({
+const historySchema = new schema({
     market: {
         type: String,
         required: true,
@@ -10,28 +10,31 @@ const auctionSchema = new schema({
         type: String,
         required: true,
     },
-    buyer: {
+    type: {
         type: String,
-    },
-    seller: {
-        type: String,
+        enum: ['List', 'Purchase'],
         required: true,
     },
-    price: {
+    list: {
         type: String,
-        required: true,
-    },
-    period: {
-        type: Number,
-        required: true,
     },
     supply: {
         type: Number,
         required: true,
-        default: 1,
+        default: 1
+    },
+    price: {
+        type: String,
+    },
+    creator: {
+        type: String,
+        required: true,
+    },
+    endAt: {
+        type: Date,
     },
     state: {
-        type: String, 
+        type: String,
         required: true,
         default: "0"
     }
@@ -45,17 +48,18 @@ const auctionSchema = new schema({
     }
 })
 
-auctionSchema.virtual('sellerInfo', {
+historySchema.virtual('creatorInfo', {
     ref: 'wallets',
-    localField: 'seller',
+    localField: 'creator',
     foreignField: 'wallet',
     justOne: true
 })
 
-auctionSchema.virtual('nftInfo', {
+historySchema.virtual('nftInfo', {
     ref: 'nfts',
     localField: 'nft',
     foreignField: 'id',
     justOne: true
 })
-module.exports = mongoose.model('auction', auctionSchema);
+
+module.exports = Buy = mongoose.model('histories', historySchema);
