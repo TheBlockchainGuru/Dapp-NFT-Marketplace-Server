@@ -59,6 +59,11 @@ buyController.Sell = async (req, res, next) => {
             transactionHash: hash
         }).save();
 
+        await historySchema.updateOne({ market:market }, {
+                            endAt: new Date(),
+                            state: 2
+                        });
+
         return otherHelper.sendResponse(res, httpStatus.OK, { message: "OK" });
     } catch (err) {
         next(err);
