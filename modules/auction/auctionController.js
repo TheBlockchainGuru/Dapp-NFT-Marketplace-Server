@@ -151,6 +151,14 @@ auctionController.Get = async (req, res, next) => {
     }
 }
 
+auctionController.Popular = async (req, res, next) => {
+    try {
+        return otherHelper.sendResponse(res, httpStatus.OK, { auctions: data });
+    } catch (err) {
+        next(err)
+    }
+}
+
 auctionController.Find = async (req, res, next) => {
     try {
         const { id } = req.body;
