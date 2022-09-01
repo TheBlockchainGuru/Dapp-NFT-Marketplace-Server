@@ -18,14 +18,14 @@ userController.Register = async (req, res, next) => {
             newWallet.user = newUser._id;
             await newWallet.save();
         }
-        const data = await walletSchema.findOne({ wallet: wallet}).populate('user');
+        // const data = await walletSchema.findOne({ wallet: wallet}).populate('user');
 
-        // const data = await walletSchema
-        //                     .findOne({ wallet: wallet})
-        //                     .populate({
-        //                         path: 'user',
-        //                         populate: 'followers, following'
-        //                     });
+        const data = await walletSchema
+                            .findOne({ wallet: wallet})
+                            .populate({
+                                path: 'user',
+                                populate: 'followers, following'
+                            });
         return otherHelper.sendResponse(res, httpStatus.OK, { user: data }, null, 'user info');
     } catch (err) {
         next(err);

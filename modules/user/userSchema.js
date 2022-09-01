@@ -27,10 +27,12 @@ const userSchema = new schema({
         type: String
     },
     followers: [{
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'users'
     }],
     following: [{
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'users'
     }],
 },  {
     timestamps: true,
