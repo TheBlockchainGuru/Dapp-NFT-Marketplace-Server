@@ -25,7 +25,13 @@ const userSchema = new schema({
     },
     web: {
         type: String
-    }
+    },
+    followers: [{
+        type: String,
+    }],
+    following: [{
+        type: String,
+    }],
 },  {
     timestamps: true,
     toJSON: { 

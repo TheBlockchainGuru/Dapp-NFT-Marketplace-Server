@@ -19,6 +19,13 @@ userController.Register = async (req, res, next) => {
             await newWallet.save();
         }
         const data = await walletSchema.findOne({ wallet: wallet}).populate('user');
+
+        // const data = await walletSchema
+        //                     .findOne({ wallet: wallet})
+        //                     .populate({
+        //                         path: 'user',
+        //                         populate: 'followers, following'
+        //                     });
         return otherHelper.sendResponse(res, httpStatus.OK, { user: data }, null, 'user info');
     } catch (err) {
         next(err);
@@ -62,6 +69,35 @@ userController.GetFeaturedUsers = async (req, res, next) => {
                         .populate('wallets')
                         .limit(12)
         return otherHelper.sendResponse(res, httpStatus.OK, { users: data });
+    } catch (err) {
+        next(err);
+    }
+}
+
+userController.Follow = async (req, res, next) => {
+    try {
+        const {walletTo, walletFrom} = req.body
+        const walletInfoTo = await walletSchema
+            .findOne({wallet: walletTo});
+        const walletInfoFrom =  await walletSchema
+            .findOne({wallet: walletFrom});
+
+        const userIdTo = walletInfoTo.user
+        const userIdFrom = walletInfoFrom.user
+    
+        await userSchema
+            .find({_id: userIdTo})
+            .update(
+                {$push: {followers: userIdFrom}},
+            )
+
+        await userSchema
+            .find({_id: userIdFrom})
+            .update(
+                {$push: {following: userIdTo}},
+            );
+
+        return otherHelper.sendResponse(res, httpStatus.OK, { message: 'success' });
     } catch (err) {
         next(err);
     }

@@ -20,6 +20,14 @@ router.post('/register', userModule.Register);
  router.post('/search', userModule.Search);
 
  /**
+ * @route POST api/user/follow
+ * @description Update user route
+ * @access Public
+ */
+
+  router.post('/follow', userModule.Follow);
+
+ /**
   * @route POST api/user/update
   * @description Update user route
   * @access Public
