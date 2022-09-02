@@ -111,7 +111,6 @@ buyController.Get = async (req, res, next) => {
             if (req.body.keyword) {
                 if (nftIds.length) {
                     const realItems = nftIds.filter(element => nftIdsFromCategory.includes(element))
-                    console.log(realItems)
                     nftIds = realItems; 
                 }
             } else {

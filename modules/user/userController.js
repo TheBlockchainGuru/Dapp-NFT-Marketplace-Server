@@ -45,7 +45,6 @@ userController.Register = async (req, res, next) => {
 userController.Update = async (req, res, next) => {
   try {
     const { id, name, image, bio, email, facebook, twitter, instagram, web } = req.body
-    console.log(req.body)
     const user = await userSchema.updateOne({_id: id }, {
       name: name,
       bio: bio,
@@ -144,6 +143,31 @@ userController.Follow = async (req, res, next) => {
     }
 
     return otherHelper.sendResponse(res, httpStatus.OK, { message: 'success' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+userController.Check = async (req, res, next) => {
+  try {
+    const {wallet, account} = req.body
+
+    const walletInfo = await walletSchema
+      .findOne({wallet: wallet});
+    const accountInfo =  await walletSchema
+      .findOne({wallet: account});
+
+    const userId = walletInfo.user
+    const accountId = accountInfo.user
+
+    const followerAvailable = await userSchema.find({
+      _id: userId,
+      followers: accountId,
+    })
+
+    const flag = followerAvailable.length ? 0 : 1
+
+    return otherHelper.sendResponse(res, httpStatus.OK, { flag: flag });
   } catch (err) {
     next(err);
   }
