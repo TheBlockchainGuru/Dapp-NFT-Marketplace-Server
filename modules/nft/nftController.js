@@ -14,27 +14,6 @@ nftController.GetTotalMintCount = async (req, res, next) => {
     }
 }
 
-nftController.Search = async (req, res, next) => {
-    try {
-        const { keyword } = req.body
-        
-        if(keyword){
-            const results = await nftSchema
-                .find({
-                    $text:{
-                        $search: keyword
-                    }
-                })  
-
-            if(results.length)
-                return otherHelper.sendResponse(res, httpStatus.OK, { data: results });
-        }
-            
-    } catch(err){
-        next(err)
-    }
-}
-
 nftController.Create = async (req, res, next) => {
     try {
         const data = new nftSchema({

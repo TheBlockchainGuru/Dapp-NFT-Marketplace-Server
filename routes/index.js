@@ -17,4 +17,8 @@ router.use('/buy', buyRoutes);
 const auctionRoutes = require('./api/auctions');
 router.use('/auction', auctionRoutes);
 
+//All route of auctions
+const searchRoutes = require('./api/search');
+router.use('/search', searchRoutes);
+
 module.exports = router;
