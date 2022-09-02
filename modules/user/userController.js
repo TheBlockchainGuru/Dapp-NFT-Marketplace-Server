@@ -24,7 +24,17 @@ userController.Register = async (req, res, next) => {
                             .findOne({ wallet: wallet})
                             .populate({
                                 path: 'user',
-                                populate: 'followers, following'
+                                populate: [{
+                                    path: 'following',
+                                    populate: {
+                                        path: 'wallets'
+                                    }
+                                }, {
+                                    path: 'followers',
+                                    populate: {
+                                        path: 'wallets',
+                                    }
+                                }]
                             });
         return otherHelper.sendResponse(res, httpStatus.OK, { user: data }, null, 'user info');
     } catch (err) {
