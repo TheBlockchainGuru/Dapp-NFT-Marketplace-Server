@@ -5,119 +5,155 @@ const otherHelper = require('../../helper/others.helper');
 const userController = {}
 
 userController.Register = async (req, res, next) => {
-    try {
-        const { wallet } = req.body;
-        const user = await walletSchema.findOne({ wallet: wallet });
+  try {
+    const { wallet } = req.body;
+    const user = await walletSchema.findOne({ wallet: wallet });
 
-        if (! user ) {
-            const newUser = new userSchema();
-            await newUser.save();
+    if (! user ) {
+      const newUser = new userSchema();
+      await newUser.save();
 
-            const newWallet = new walletSchema();
-            newWallet.wallet = wallet;
-            newWallet.user = newUser._id;
-            await newWallet.save();
-        }
-        // const data = await walletSchema.findOne({ wallet: wallet}).populate('user');
-
-        const data = await walletSchema
-                            .findOne({ wallet: wallet})
-                            .populate({
-                                path: 'user',
-                                populate: [{
-                                    path: 'following',
-                                    populate: {
-                                        path: 'wallets'
-                                    }
-                                }, {
-                                    path: 'followers',
-                                    populate: {
-                                        path: 'wallets',
-                                    }
-                                }]
-                            });
-        return otherHelper.sendResponse(res, httpStatus.OK, { user: data }, null, 'user info');
-    } catch (err) {
-        next(err);
+      const newWallet = new walletSchema();
+      newWallet.wallet = wallet;
+      newWallet.user = newUser._id;
+      await newWallet.save();
     }
+    // const data = await walletSchema.findOne({ wallet: wallet}).populate('user');
+
+    const data = await walletSchema
+              .findOne({ wallet: wallet})
+              .populate({
+                path: 'user',
+                populate: [{
+                  path: 'following',
+                  populate: {
+                    path: 'wallets'
+                  }
+                }, {
+                  path: 'followers',
+                  populate: {
+                    path: 'wallets',
+                  }
+                }]
+              });
+    return otherHelper.sendResponse(res, httpStatus.OK, { user: data }, null, 'user info');
+  } catch (err) {
+    next(err);
+  }
 }
 
 userController.Update = async (req, res, next) => {
-    try {
-        const { id, name, image, bio, email, facebook, twitter, instagram, web } = req.body
-        console.log(req.body)
-        const user = await userSchema.updateOne({_id: id }, {
-            name: name,
-            bio: bio,
-            image: image,
-            email: email,
-            facebook: facebook,
-            twitter: twitter,
-            instagram: instagram,
-            web: web
-        })
+  try {
+    const { id, name, image, bio, email, facebook, twitter, instagram, web } = req.body
+    console.log(req.body)
+    const user = await userSchema.updateOne({_id: id }, {
+      name: name,
+      bio: bio,
+      image: image,
+      email: email,
+      facebook: facebook,
+      twitter: twitter,
+      instagram: instagram,
+      web: web
+    })
 
-        return otherHelper.sendResponse(res, httpStatus.OK, { user: user});
-    } catch (err) {
-        next(err);
-    }
+    return otherHelper.sendResponse(res, httpStatus.OK, { user: user});
+  } catch (err) {
+    next(err);
+  }
 }
 
 userController.GetTotalUserCount = async (req, res, next) => {
-    try {
-        const data = await userSchema.find().count();
-        return otherHelper.sendResponse(res, httpStatus.OK, { total: data });
-    } catch (err) {
-        next(err);
-    }
+  try {
+    const data = await userSchema.find().count();
+    return otherHelper.sendResponse(res, httpStatus.OK, { total: data });
+  } catch (err) {
+    next(err);
+  }
 }
 
 userController.GetFeaturedUsers = async (req, res, next) => {
-    try {
-        const data = await userSchema
-                        .find()
-                        .populate('wallets')
-                        .limit(12)
-        return otherHelper.sendResponse(res, httpStatus.OK, { users: data });
-    } catch (err) {
-        next(err);
-    }
+  try {
+    const data = await userSchema
+            .find()
+            .populate('wallets')
+            .limit(12)
+    return otherHelper.sendResponse(res, httpStatus.OK, { users: data });
+  } catch (err) {
+    next(err);
+  }
 }
 
 userController.Follow = async (req, res, next) => {
-    try {
-        const {walletTo, walletFrom} = req.body
-        const walletInfoTo = await walletSchema
-            .findOne({wallet: walletTo});
-        const walletInfoFrom =  await walletSchema
-            .findOne({wallet: walletFrom});
+  try {
+    const {walletTo, walletFrom, flag} = req.body
+    const walletInfoTo = await walletSchema
+      .findOne({wallet: walletTo});
+    const walletInfoFrom =  await walletSchema
+      .findOne({wallet: walletFrom});
 
-        const userIdTo = walletInfoTo.user
-        const userIdFrom = walletInfoFrom.user
-    
+    const userIdTo = walletInfoTo.user
+    const userIdFrom = walletInfoFrom.user
+
+    const followerAvailable = await userSchema.find({
+      _id: userIdTo,
+      followers: userIdFrom,
+    })
+
+    const followingAvailable = await userSchema.find({
+      _id: userIdFrom,
+      following: userIdTo,
+    })
+
+    if(flag){
+      
+      if(!followerAvailable.length){
         await userSchema
-            .find({_id: userIdTo})
-            .update(
-                {$push: {followers: userIdFrom}},
-            )
+          .find({_id: userIdTo})
+          .update(
+            {$push: {followers: userIdFrom}},
+          )
+      }
 
+      if(!followingAvailable.length){
         await userSchema
-            .find({_id: userIdFrom})
-            .update(
-                {$push: {following: userIdTo}},
-            );
+          .find({_id: userIdFrom})
+          .update(
+            {$push: {following: userIdTo}},
+          );
+      }
+    } else {
+      
+      if(followerAvailable.length){
+        // delete
+        await userSchema
+          .find({_id: userIdTo})
+          .update(
+            {$pull: {followers: userIdFrom}},
+          );
+      }
 
-        return otherHelper.sendResponse(res, httpStatus.OK, { message: 'success' });
-    } catch (err) {
-        next(err);
+      if(followingAvailable.length){
+        // delete
+        await userSchema
+          .find({_id: userIdFrom})
+          .update(
+            {$pull: {following: userIdTo}},
+          );
+      }
     }
+
+    return otherHelper.sendResponse(res, httpStatus.OK, { message: 'success' });
+  } catch (err) {
+    next(err);
+  }
 }
 
 userController.Search = async (res, req, next) => {
-    try {
-        return otherHelper.sendResponse(res, httpStatus.OK, { message: "SUCCESS"});
-    } catch (err) {
-        next(err);
-    }
+  try {
+    return otherHelper.sendResponse(res, httpStatus.OK, { message: "SUCCESS"});
+  } catch (err) {
+    next(err);
+  }
 }
 module.exports = userController;
