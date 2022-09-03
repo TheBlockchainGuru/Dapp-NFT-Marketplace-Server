@@ -58,4 +58,4 @@ auctionSchema.virtual('nftInfo', {
     foreignField: 'id',
     justOne: true
 })
-module.exports = mongoose.model('auction', auctionSchema);
+module.exports = mongoose.model('auctions', auctionSchema);

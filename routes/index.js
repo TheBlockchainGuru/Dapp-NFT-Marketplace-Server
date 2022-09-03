@@ -21,4 +21,8 @@ router.use('/auction', auctionRoutes);
 const searchRoutes = require('./api/search');
 router.use('/search', searchRoutes);
 
+//All route of bids
+const bidRoutes = require('./api/bids');
+router.use('/bid', bidRoutes);
+
 module.exports = router;
