@@ -16,7 +16,7 @@ const bidSchema = new schema({
         required: true,
     },
     price: {
-        type: String,
+        type: Number,
         required: true,
     },
     supply: {

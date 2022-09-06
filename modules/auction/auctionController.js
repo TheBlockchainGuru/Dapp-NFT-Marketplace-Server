@@ -149,7 +149,7 @@ auctionController.Get = async (req, res, next) => {
             const row = auctions[i].toObject();
             const bids = await bidSchema
                             .find({auction: row._id})
-                            .sort([['price', '-1']])
+                            .sort([['price', 1]])
                             .populate({
                                 path: 'bidderInfo',
                                 populate: {
@@ -203,7 +203,7 @@ auctionController.Find = async (req, res, next) => {
             const result = data.toObject();
             const bids = await bidSchema
                                     .find({auction: data._id})
-                                    .sort([['price', -1]])
+                                    .sort([['price', 1]])
                                     .populate({
                                         path: 'bidderInfo',
                                         populate: {
