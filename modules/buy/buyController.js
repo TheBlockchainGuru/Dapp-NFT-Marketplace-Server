@@ -23,13 +23,11 @@ buyController.Buy = async (req, res, next) => {
         await new historySchema({
             market: req.body.market,
             nft: req.body.nft,
-            type: 'Purchase',
-            list: data._id,
+            type: 'List',
+            buy: data._id,
             supply: req.body.supply,
             price: req.body.price,
             creator: req.body.seller,
-            state: "0",
-            endAt: req.body.endAt
         }).save();
         return otherHelper.sendResponse(res, httpStatus.OK, { buy: data });
     } catch (err) {
@@ -41,7 +39,7 @@ buyController.Sell = async (req, res, next) => {
     try {
         const { market, buyer, seller, supply, nft, hash, price } = req.body;
 
-        await buySchema.updateOne({ market: market}, {
+        const buy = await buySchema.updateOne({ market: market}, {
             state: 2,
             buyer: buyer,
         });
@@ -59,10 +57,15 @@ buyController.Sell = async (req, res, next) => {
             transactionHash: hash
         }).save();
 
-        await historySchema.updateOne({ market:market }, {
-                            endAt: new Date(),
-                            state: 2
-                        });
+        await new historySchema({
+            market: market,
+            nft: nft,
+            type: 'Purchase',
+            buy: buy._id,
+            price: price,
+            supply: supply,
+            creator: buyer,
+        }).save();
 
         return otherHelper.sendResponse(res, httpStatus.OK, { message: "OK" });
     } catch (err) {

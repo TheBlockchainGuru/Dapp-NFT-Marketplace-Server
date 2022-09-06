@@ -1,5 +1,6 @@
 const userSchema = require('./userSchema');
 const walletSchema = require('../wallet/walletSchema');
+const historySchema = require('../history/historySchema');
 const httpStatus = require('http-status');
 const otherHelper = require('../../helper/others.helper');
 const userController = {}
@@ -108,37 +109,37 @@ userController.Follow = async (req, res, next) => {
       
       if(!followerAvailable.length){
         await userSchema
-          .find({_id: userIdTo})
-          .update(
-            {$push: {followers: userIdFrom}},
-          )
+          .updateOne({_id: userIdTo},{
+              $push: {
+                followers: userIdFrom
+              }
+            })
+
+        await new historySchema({
+          type: 'Following',
+          creator: walletFrom,
+          following: userIdTo,
+        }).save();
+        
       }
 
       if(!followingAvailable.length){
         await userSchema
-          .find({_id: userIdFrom})
-          .update(
-            {$push: {following: userIdTo}},
-          );
+          .updateOne({_id: userIdFrom}, {$push: {following: userIdTo}})
       }
     } else {
       
       if(followerAvailable.length){
         // delete
         await userSchema
-          .find({_id: userIdTo})
-          .update(
-            {$pull: {followers: userIdFrom}},
-          );
+          .updateOne({_id: userIdTo}, {$pull: {followers: userIdFrom}})
       }
 
       if(followingAvailable.length){
         // delete
         await userSchema
-          .find({_id: userIdFrom})
-          .update(
-            {$pull: {following: userIdTo}},
-          );
+          .updateOne({_id: userIdFrom}, 
+            {$pull: {following: userIdTo}})
       }
     }
 

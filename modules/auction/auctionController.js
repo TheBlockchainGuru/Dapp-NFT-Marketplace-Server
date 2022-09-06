@@ -25,12 +25,10 @@ auctionController.Auction = async (req, res, next) => {
             market: req.body.market,
             nft: req.body.nft,
             type: 'List',
-            list: data._id,
+            auction: data._id,
             supply: req.body.supply,
             price: req.body.price,
-            creator: req.body.seller,
-            state: "0",
-            endAt: req.body.endAt
+            creator: req.body.seller
         }).save();
         return otherHelper.sendResponse(res, httpStatus.OK, { auction: data });
     } catch (err) {
@@ -66,6 +64,16 @@ auctionController.Bid = async (req, res, next) => {
             price: price,
             supply: supply,
             transactionHash: hash
+        }).save();
+
+        await new historySchema({
+            market: auction.market,
+            nft: auction.nft,
+            type: 'Bid',
+            auction: auction._id,
+            price: price,
+            supply: supply,
+            creator: bidder,
         }).save();
 
         return otherHelper.sendResponse(res, httpStatus.OK, { message: 'SUCCESS' });

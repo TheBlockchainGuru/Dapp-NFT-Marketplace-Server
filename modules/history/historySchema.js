@@ -4,39 +4,36 @@ const schema = mongoose.Schema;
 const historySchema = new schema({
     market: {
         type: String,
-        required: true,
     },
     nft: {
         type: String,
-        required: true,
     },
     type: {
         type: String,
-        enum: ['List', 'Purchase'],
+        enum: ['List', 'Purchase', 'Bid', 'Following'],
         required: true,
     },
-    list: {
-        type: String,
+    auction: {
+        type: mongoose.Types.ObjectId,
+        ref: 'auctions'
     },
-    supply: {
-        type: Number,
-        required: true,
-        default: 1
+    buy: {
+        type: mongoose.Types.ObjectId,
+        ref: 'buys'
     },
     price: {
-        type: String,
+        type: 'String'
+    },    
+    supply: {
+        type: Number,
     },
     creator: {
         type: String,
         required: true,
     },
-    endAt: {
-        type: Date,
-    },
-    state: {
-        type: String,
-        required: true,
-        default: "0"
+    following: {
+        type: mongoose.Types.ObjectId,
+        ref: 'users'
     }
 }, {
     timestamps: true,

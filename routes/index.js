@@ -25,4 +25,8 @@ router.use('/search', searchRoutes);
 const bidRoutes = require('./api/bids');
 router.use('/bid', bidRoutes);
 
+//All route of histories
+const historyRoutes = require('./api/histories');
+router.use('/history', historyRoutes);
+
 module.exports = router;
