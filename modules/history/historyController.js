@@ -36,9 +36,14 @@ historyController.GetFollowing = async (req, res, next) => {
                                     },
                                     type: "Following"
                                 })
-                                .populate('following');
-
-                                console.log(response)
+                                .populate({
+                                    path: 'creatorInfo',
+                                    populate: 'user'
+                                })
+                                .populate({
+                                    path: 'following',
+                                    populate: 'wallets'
+                                });
         } 
         return otherHelper.sendResponse(res, httpStatus.OK, { following: response } );
     } catch (err) {
@@ -77,9 +82,14 @@ historyController.GetBidding = async (req, res, next) => {
                                     },
                                     type: "Bid"
                                 })
-                                .populate('following');
-
-                                console.log(response)
+                                .populate({
+                                    path: 'auction',
+                                    populate: 'nftInfo'
+                                })
+                                .populate({
+                                    path: 'creatorInfo',
+                                    populate: 'user'
+                                });
         } 
         return otherHelper.sendResponse(res, httpStatus.OK, { bidding: response } );
     } catch (err) {
@@ -120,10 +130,18 @@ historyController.GetSales = async (req, res, next) => {
                                         $in: ["List", "Purchase"]
                                     }
                                 })
-                                .populate('buy')
-                                .populate('auction');
-
-                                console.log(response)
+                                .populate({
+                                    path: 'buy',
+                                    populate: 'nftInfo'
+                                })
+                                .populate({
+                                    path: 'auction',
+                                    populate: 'nftInfo'
+                                })
+                                .populate({
+                                    path: 'creatorInfo',
+                                    populate: 'user'
+                                });
         } 
         return otherHelper.sendResponse(res, httpStatus.OK, { sales: response } );
     } catch (err) {

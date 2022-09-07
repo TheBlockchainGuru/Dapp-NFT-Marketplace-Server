@@ -18,7 +18,7 @@ const buySchema = new schema({
         type: String,
     },
     price: {
-        type: String,
+        type: Number,
         required: true
     },
     supply: {
